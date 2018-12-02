@@ -15,6 +15,10 @@ const puttext = () => {
     const li = document.createElement('li');
     const lists = document.getElementById('lists');
     li.appendChild(document.createTextNode(text));
+    const btn = document.createElement('input');
+    btn.setAttribute('type', 'button');
+    btn.setAttribute('value', 'x');
+    li.appendChild(btn);
     lists.appendChild(li);
     document.getElementById('text').value = "";
 }
