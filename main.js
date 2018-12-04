@@ -1,49 +1,78 @@
-window.onload = load => {
-    init();
-}
-
-const puttext = () => {
-    let count = localStorage.length;
-    const text = document.getElementById('text').value;
-    if (('localStorage' in window) && (window.localStorage !== null)) {
-        const key = "number" + count.toString();
-        localStorage.setItem(key, text);
-        console.log("success")
-    } else {
-        console.log("not success");
+class DoTextList {
+    constructor(){
+        this.lists = localStorage.getItem('key').split(',');
+        this.rewrite();
     }
-    const li = document.createElement('li');
-    const lists = document.getElementById('lists');
-    li.appendChild(document.createTextNode(text));
-    const btn = document.createElement('input');
-    btn.setAttribute('type', 'button');
-    btn.setAttribute('value', 'x');
-    li.appendChild(btn);
-    lists.appendChild(li);
-    document.getElementById('text').value = "";
-}
 
-const clearlog  = () => {
-    localStorage.clear();
-    // init();
-    location.reload();
-}
+    check() {
+        return ('localStorage' in window) && (window.localStorage !== null); 
+    }
 
-const deleteone = () => {
-    localStorage.removeItem(localStorage.key(localStorage.length - 1));
-    const lists = document.getElementById('lists');
-    lists.removeChild(lists.lastElementChild);
-}
+    addText(text) {
+        this.lists.push(text);
+        if( this.check )localStorage.setItem('key',this.lists);
+        this._clearDOMLists();
+        this.rewrite();
+    }
 
-const init = () => {
-    const lists = document.getElementById('lists');
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const li = document.createElement("li");
-        const text = document.createTextNode(localStorage.getItem(key));
+    deleteX() {
+        
+    }
 
-        li.appendChild(text);
-        lists.appendChild(li);
+
+    clearLists() {
+        this.lists = [];
+        this._clearDOMLists();
+        this._clearWebStrageLists();
+        this.rewrite();
+    }
+
+    _clearDOMLists() {
+        const lists = document.getElementById('lists');
+        while (lists.firstChild) {
+            lists.removeChild(lists.firstChild);
+        }
+    }
+    
+    _clearWebStrageLists() {
+        localStorage.clear(); 
+    }
+
+    rewrite() {
+        const list = document.getElementById('lists');
+        for(let text of this.lists){
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode(text));
+
+            const btn = document.createElement('input');
+            btn.setAttribute('type', 'button');
+            btn.setAttribute('value', 'x');
+            btn.setAttribute('on-click','deltext()');
+
+            li.appendChild(btn);
+            list.appendChild(li);
+        }
     }
 }
+const doTestList = new DoTextList();
 
+window.onload = init => {
+    console.log(doTestList.check()?'success!':'no success');
+
+    const text = document.getElementById('text');
+    const putBtn = document.getElementById('put');
+    const clrBtn = document.getElementById('clear');
+
+    putBtn.addEventListener('click', () => {
+        doTestList.addText(text.value);
+        text.value = "";
+    });
+
+    clrBtn.addEventListener('click', () => {
+        doTestList.clearLists();
+    });
+}
+
+const deltext = () => {
+    doTestList.deleteX();
+}
