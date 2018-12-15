@@ -15,7 +15,6 @@ class StrageService {
     deleteOne(key) {
         localStorage.removeItem(key);
     }
-
 }
 
 class OperateDOM {
@@ -73,14 +72,26 @@ window.onload = init => {
     const clrBtn = document.getElementById('clear');
     operateDOM.init();
 
+    text.addEventListener('keydown', (e) => {
+        if( e.keyCode === 13 ) {
+            if(isSentence(text.value)) {
+                const key = 'key' + makeKey(text.value);
+                strageService.addText(key, text.value);
+                operateDOM.addToEnd(key, text.value);
+                console.log(localStorage);
+            }
+            text.value = "";
+        }
+    })
+
     putBtn.addEventListener('click', () => {
-        if (text.value !== '') {
+        if (isSentence(text.value)) {
             const key = 'key' + makeKey(text.value);
             strageService.addText(key, text.value);
             operateDOM.addToEnd(key, text.value);
-            text.value = "";
             console.log(localStorage);
-        }
+        } 
+        text.value = "";
     });
 
     clrBtn.addEventListener('click', () => {
@@ -104,4 +115,9 @@ const makeKey = (text) => {
     const now = Date.now() % 10000;
     // return now.toString().padStart(4,'0');
     return ('00000' + now.toString()).slice(-4);
+}
+
+const isSentence = (text) => {
+    const exceptionText = /^\s*$/;
+    return !(!text || exceptionText.test(text));
 }
