@@ -1,78 +1,107 @@
-class DoTextList {
-    constructor(){
-        this.lists = localStorage.getItem('key').split(',');
-        this.rewrite();
-    }
-
+class StrageService {
+    constructor(){}
     check() {
         return ('localStorage' in window) && (window.localStorage !== null); 
     }
 
-    addText(text) {
-        this.lists.push(text);
-        if( this.check )localStorage.setItem('key',this.lists);
-        this._clearDOMLists();
-        this.rewrite();
+    addText(key, text) {
+        localStorage.setItem(key, text);
     }
 
-    deleteX() {
-        
+    clearAll() {
+        localStorage.clear();
     }
 
-
-    clearLists() {
-        this.lists = [];
-        this._clearDOMLists();
-        this._clearWebStrageLists();
-        this.rewrite();
+    deleteOne(key) {
+        localStorage.removeItem(key);
     }
 
-    _clearDOMLists() {
+}
+
+class OperateDOM {
+    constructor() {
+        // this.lists = document.getElementById('lists');
+        // ほかのとこでthis.listsで操作しようとするとできない、なんで
+    }
+
+    init() {
+        for( let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            this.addToEnd(key, localStorage.getItem(key));
+        }
+    }
+
+    addToEnd(key, text) {
+        // console.log(text);
+        const lists = document.getElementById('lists');
+        const li = document.createElement('li');
+        li.appendChild(document.createTextNode(text));
+
+        const btn = document.createElement('input');
+        btn.setAttribute('type', 'button');
+        btn.setAttribute('value', 'x');
+        btn.setAttribute('id', key);
+        btn.setAttribute('onclick', 'deleteone(this)');
+
+        li.appendChild(btn);
+        lists.appendChild(li);
+    }
+
+    clearAll() {
         const lists = document.getElementById('lists');
         while (lists.firstChild) {
             lists.removeChild(lists.firstChild);
         }
     }
-    
-    _clearWebStrageLists() {
-        localStorage.clear(); 
+
+    deleteOne(key) {
+        const lists = document.getElementById('lists');
+        const delBtn = document.getElementById(key);
+        const child = delBtn.parentElement;
+        const gab = lists.removeChild(child);
     }
 
-    rewrite() {
-        const list = document.getElementById('lists');
-        for(let text of this.lists){
-            const li = document.createElement('li');
-            li.appendChild(document.createTextNode(text));
-
-            const btn = document.createElement('input');
-            btn.setAttribute('type', 'button');
-            btn.setAttribute('value', 'x');
-            btn.setAttribute('on-click','deltext()');
-
-            li.appendChild(btn);
-            list.appendChild(li);
-        }
-    }
 }
-const doTestList = new DoTextList();
+
+const strageService = new StrageService();
+const operateDOM = new OperateDOM();
 
 window.onload = init => {
-    console.log(doTestList.check()?'success!':'no success');
-
+    console.log(strageService.check()?'success!':'no success');
     const text = document.getElementById('text');
     const putBtn = document.getElementById('put');
     const clrBtn = document.getElementById('clear');
+    operateDOM.init();
 
     putBtn.addEventListener('click', () => {
-        doTestList.addText(text.value);
-        text.value = "";
+        if (text.value !== '') {
+            const key = 'key' + makeKey(text.value);
+            strageService.addText(key, text.value);
+            operateDOM.addToEnd(key, text.value);
+            text.value = "";
+            console.log(localStorage);
+        }
     });
 
     clrBtn.addEventListener('click', () => {
-        doTestList.clearLists();
+        strageService.clearAll();
+        operateDOM.clearAll();
+        console.log(localStorage);
+    });
+
+    document.getElementById('debug').addEventListener('click', () => {
+        console.log(localStorage);
     });
 }
 
-const deltext = () => {
-    doTestList.deleteX();
+const deleteone = (ele) => {
+    console.log(ele.id);
+    strageService.deleteOne(ele.id);
+    operateDOM.deleteOne(ele.id);
+}
+
+const makeKey = (text) => {
+    const now = Date.now() % 10000;
+    // return now.toString().padStart(4,'0');
+    return ('00000' + now.toString()).slice(-4);
 }
